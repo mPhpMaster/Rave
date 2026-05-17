@@ -51,6 +51,7 @@ export default async function RoomPage({ params }: { params: { id: string } }) {
   } = await supabase.auth.getSession();
 
   const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL ?? "http://localhost:3001";
+  const liveKitUrl = process.env.NEXT_PUBLIC_LIVEKIT_URL ?? "";
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -67,6 +68,7 @@ export default async function RoomPage({ params }: { params: { id: string } }) {
         currentUserId={user.id}
         accessToken={session?.access_token ?? null}
         socketUrl={socketUrl}
+        liveKitUrl={liveKitUrl}
       />
     </div>
   );

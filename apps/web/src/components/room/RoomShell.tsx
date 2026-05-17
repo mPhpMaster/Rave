@@ -2,11 +2,15 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSocket } from "@/hooks/useSocket";
+import { useScreenShareHost } from "@/hooks/useScreenShareHost";
+import { useScreenShareViewer } from "@/hooks/useScreenShareViewer";
 import RoomPlayer from "@/components/player/RoomPlayer";
 import type { PlayerHandle } from "@/components/player/PlayerHandle";
 import MemberList from "./MemberList";
 import ChatPanel from "./ChatPanel";
 import InviteButton from "./InviteButton";
+import ScreenShareView from "./ScreenShareView";
+import VoicePanel from "./VoicePanel";
 import type {
   ChatMessage,
   RoomMember,
@@ -29,13 +33,20 @@ interface Props {
   currentUserId: string;
   accessToken: string | null;
   socketUrl: string;
+  liveKitUrl: string;
 }
 
 const SYNC_INTERVAL_MS = 1500;
 const HEARTBEAT_INTERVAL_MS = 2000;
 const DRIFT_THRESHOLD_S = 0.5;
 
-export default function RoomShell({ room, currentUserId, accessToken, socketUrl }: Props) {
+export default function RoomShell({
+  room,
+  currentUserId,
+  accessToken,
+  socketUrl,
+  liveKitUrl
+}: Props) {
   const isHost = room.hostId === currentUserId;
   const { socket, connected } = useSocket(socketUrl, accessToken);
   const playerRef = useRef<PlayerHandle>(null);
@@ -165,6 +176,15 @@ export default function RoomShell({ room, currentUserId, accessToken, socketUrl 
     [socket, room.id]
   );
 
+  const shareHost = useScreenShareHost(socket, room.id, isHost, members, currentUserId);
+  const shareViewer = useScreenShareViewer(socket, room.id, room.hostId, isHost);
+
+  // What to show in the main video area: host's local preview while sharing,
+  // viewer's remote stream when host is sharing, else the regular RoomPlayer.
+  const showHostShareView = isHost && shareHost.sharing && shareHost.stream;
+  const showViewerShareView =
+    !isHost && shareViewer.sharingActive && shareViewer.remoteStream;
+
   // 3a. HOST: heartbeat playback state.
   useEffect(() => {
     if (!isHost || !socket || !playerReady) return;
@@ -236,7 +256,19 @@ export default function RoomShell({ room, currentUserId, accessToken, socketUrl 
           </div>
         )}
 
-        {resolvedVideoUrl ? (
+        {showHostShareView ? (
+          <ScreenShareView
+            stream={shareHost.stream!}
+            mutedDefault
+            label={`Sharing screen · ${shareHost.viewerCount} viewer${shareHost.viewerCount === 1 ? "" : "s"}`}
+          />
+        ) : showViewerShareView ? (
+          <ScreenShareView
+            stream={shareViewer.remoteStream!}
+            mutedDefault={false}
+            label="Host is sharing their screen"
+          />
+        ) : resolvedVideoUrl ? (
           <RoomPlayer
             ref={playerRef}
             videoProvider={room.videoProvider}
@@ -254,21 +286,43 @@ export default function RoomShell({ room, currentUserId, accessToken, socketUrl 
         )}
 
         {isHost && (
-          <div className="mt-3 flex items-center gap-2 text-sm">
+          <div className="mt-3 flex items-center gap-2 text-sm flex-wrap">
             <button
               onClick={() => handleSeekClick("back")}
-              className="px-3 py-1.5 rounded-lg bg-neutral-800 hover:bg-neutral-700"
+              disabled={shareHost.sharing}
+              className="px-3 py-1.5 rounded-lg bg-neutral-800 hover:bg-neutral-700 disabled:opacity-50"
             >
               − 10s
             </button>
             <button
               onClick={() => handleSeekClick("forward")}
-              className="px-3 py-1.5 rounded-lg bg-neutral-800 hover:bg-neutral-700"
+              disabled={shareHost.sharing}
+              className="px-3 py-1.5 rounded-lg bg-neutral-800 hover:bg-neutral-700 disabled:opacity-50"
             >
               + 10s
             </button>
-            <span className="ml-2 text-xs text-neutral-500">
-              You are the host. Play / pause / seek to control the room.
+            {shareHost.sharing ? (
+              <button
+                onClick={shareHost.stop}
+                className="px-3 py-1.5 rounded-lg bg-red-500/80 hover:bg-red-500 font-medium"
+              >
+                Stop sharing
+              </button>
+            ) : (
+              <button
+                onClick={() => void shareHost.start()}
+                className="px-3 py-1.5 rounded-lg bg-neutral-800 hover:bg-neutral-700"
+              >
+                Share screen
+              </button>
+            )}
+            {shareHost.error && (
+              <span className="text-xs text-red-400">{shareHost.error}</span>
+            )}
+            <span className="ml-auto text-xs text-neutral-500">
+              {shareHost.sharing
+                ? "Screen sharing — guests see your screen until you stop."
+                : "You are the host. Play / pause / seek to control the room."}
             </span>
           </div>
         )}
@@ -281,6 +335,9 @@ export default function RoomShell({ room, currentUserId, accessToken, socketUrl 
 
       <aside className="flex flex-col gap-4 min-h-0 lg:h-full">
         <MemberList members={members} hostId={room.hostId} currentUserId={currentUserId} />
+        {liveKitUrl && (
+          <VoicePanel roomId={room.id} socketUrl={socketUrl} liveKitUrl={liveKitUrl} />
+        )}
         <div className="flex-1 min-h-[320px] lg:min-h-0">
           <ChatPanel
             messages={messages}

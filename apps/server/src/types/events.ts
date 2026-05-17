@@ -39,6 +39,11 @@ export interface ClientToServerEvents {
   "playback:state": (data: { roomId: string; t: number; paused: boolean }) => void;
   "chat:message": (data: { roomId: string; body: string }) => void;
   "chat:typing": (data: { roomId: string; isTyping: boolean }) => void;
+  "webrtc:share-start": (data: { roomId: string }) => void;
+  "webrtc:share-stop": (data: { roomId: string }) => void;
+  "webrtc:offer": (data: { roomId: string; to: string; sdp: string }) => void;
+  "webrtc:answer": (data: { roomId: string; to: string; sdp: string }) => void;
+  "webrtc:ice": (data: { roomId: string; to: string; candidate: string }) => void;
 }
 
 // Server -> Client
@@ -51,6 +56,11 @@ export interface ServerToClientEvents {
   "playback:state": (data: PlaybackState) => void;
   "chat:message": (data: ChatMessage) => void;
   "chat:typing": (data: { userId: string; isTyping: boolean }) => void;
+  "webrtc:share-start": (data: { hostId: string }) => void;
+  "webrtc:share-stop": (data: { hostId: string }) => void;
+  "webrtc:offer": (data: { from: string; sdp: string }) => void;
+  "webrtc:answer": (data: { from: string; sdp: string }) => void;
+  "webrtc:ice": (data: { from: string; candidate: string }) => void;
   error: (data: { code: string; message: string }) => void;
 }
 
