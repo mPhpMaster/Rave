@@ -2,15 +2,9 @@
 
 import { forwardRef, useImperativeHandle, useRef, useState } from "react";
 import YouTube, { type YouTubeEvent, type YouTubePlayer as YT } from "react-youtube";
+import type { PlayerHandle } from "./PlayerHandle";
 
-export interface PlayerHandle {
-  play(): void;
-  pause(): void;
-  seekTo(t: number): void;
-  getCurrentTime(): number;
-  isBuffering(): boolean;
-  isPaused(): boolean;
-}
+export type { PlayerHandle };
 
 interface Props {
   videoId: string;

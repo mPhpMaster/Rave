@@ -1,7 +1,9 @@
 "use client";
 
 import { forwardRef } from "react";
-import YouTubePlayer, { type PlayerHandle } from "./YouTubePlayer";
+import YouTubePlayer from "./YouTubePlayer";
+import Mp4Player from "./Mp4Player";
+import type { PlayerHandle } from "./PlayerHandle";
 import type { VideoProvider } from "@/types/events";
 
 interface Props {
@@ -31,9 +33,22 @@ const RoomPlayer = forwardRef<PlayerHandle, Props>(function RoomPlayer(
       />
     );
   }
+  if (videoProvider === "mp4") {
+    return (
+      <Mp4Player
+        ref={ref}
+        src={videoUrl}
+        interactive={isHost}
+        startMuted={startMuted}
+        onReady={onReady}
+        onUserPlay={onUserPlay}
+        onUserPause={onUserPause}
+      />
+    );
+  }
   return (
     <div className="w-full aspect-video bg-black rounded-xl grid place-items-center text-neutral-500">
-      {videoProvider} player coming in a later checkpoint.
+      {videoProvider} player coming later.
     </div>
   );
 });

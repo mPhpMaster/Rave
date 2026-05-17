@@ -70,3 +70,19 @@ export async function fetchUsername(userId: string): Promise<string> {
     .maybeSingle();
   return data?.username ?? "user";
 }
+
+// MP4 rooms store the storage path in `video_url`. For each new join we mint
+// a fresh signed URL (24h TTL); the cost is ~one storage RPC per join.
+const SIGNED_URL_TTL_S = 60 * 60 * 24;
+
+export async function resolveVideoUrl(room: RoomState): Promise<string> {
+  if (room.videoProvider !== "mp4") return room.videoUrl;
+  const { data, error } = await supabaseAdmin.storage
+    .from("room-videos")
+    .createSignedUrl(room.videoUrl, SIGNED_URL_TTL_S);
+  if (error || !data) {
+    console.error("[rooms] signed URL failed", error);
+    return "";
+  }
+  return data.signedUrl;
+}

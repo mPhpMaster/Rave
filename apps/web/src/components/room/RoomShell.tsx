@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSocket } from "@/hooks/useSocket";
 import RoomPlayer from "@/components/player/RoomPlayer";
-import type { PlayerHandle } from "@/components/player/YouTubePlayer";
+import type { PlayerHandle } from "@/components/player/PlayerHandle";
 import MemberList from "./MemberList";
 import ChatPanel from "./ChatPanel";
 import InviteButton from "./InviteButton";
@@ -44,6 +44,11 @@ export default function RoomShell({ room, currentUserId, accessToken, socketUrl 
   const [joinError, setJoinError] = useState<string | null>(null);
   const [joined, setJoined] = useState(false);
   const [playerReady, setPlayerReady] = useState(false);
+  const [resolvedVideoUrl, setResolvedVideoUrl] = useState<string | null>(
+    // YouTube: the SSR-passed ID is usable immediately. MP4 needs the signed
+    // URL from the room:snapshot — render nothing until it arrives.
+    room.videoProvider === "youtube" ? room.videoUrl : null
+  );
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [typingUserIds, setTypingUserIds] = useState<string[]>([]);
   const typingTimersRef = useRef<Map<string, number>>(new Map());
@@ -70,6 +75,7 @@ export default function RoomShell({ room, currentUserId, accessToken, socketUrl 
   function handleSnapshot(snap: RoomSnapshot) {
     setMembers(snap.members);
     setMessages(snap.recentMessages ?? []);
+    if (snap.videoUrl) setResolvedVideoUrl(snap.videoUrl);
     remoteRef.current = snap.playback;
     lastAppliedTsRef.current = snap.playback.serverTs;
     setJoined(true);
@@ -230,16 +236,22 @@ export default function RoomShell({ room, currentUserId, accessToken, socketUrl 
           </div>
         )}
 
-        <RoomPlayer
-          ref={playerRef}
-          videoProvider={room.videoProvider}
-          videoUrl={room.videoUrl}
-          isHost={isHost}
-          startMuted={!isHost}
-          onReady={() => setPlayerReady(true)}
-          onUserPlay={hostHandlers.onUserPlay}
-          onUserPause={hostHandlers.onUserPause}
-        />
+        {resolvedVideoUrl ? (
+          <RoomPlayer
+            ref={playerRef}
+            videoProvider={room.videoProvider}
+            videoUrl={resolvedVideoUrl}
+            isHost={isHost}
+            startMuted={!isHost}
+            onReady={() => setPlayerReady(true)}
+            onUserPlay={hostHandlers.onUserPlay}
+            onUserPause={hostHandlers.onUserPause}
+          />
+        ) : (
+          <div className="w-full aspect-video bg-black rounded-xl grid place-items-center text-neutral-500 text-sm">
+            Loading video…
+          </div>
+        )}
 
         {isHost && (
           <div className="mt-3 flex items-center gap-2 text-sm">

@@ -5,7 +5,7 @@ import type {
   SocketData,
   RoomSnapshot
 } from "../types/events.js";
-import { loadRoom, isMember, fetchUsername, purgeIfEmpty, getRoom } from "../rooms.js";
+import { loadRoom, isMember, fetchUsername, purgeIfEmpty, getRoom, resolveVideoUrl } from "../rooms.js";
 import { fetchRecentMessages } from "./chat.js";
 
 type RaveServer = Server<ClientToServerEvents, ServerToClientEvents, Record<string, never>, SocketData>;
@@ -35,7 +35,10 @@ export function registerPresence(io: RaveServer, socket: RaveSocket) {
 
       socket.to(channel(roomId)).emit("user:joined", { userId, username });
 
-      const recentMessages = await fetchRecentMessages(roomId);
+      const [recentMessages, signedVideoUrl] = await Promise.all([
+        fetchRecentMessages(roomId),
+        resolveVideoUrl(room)
+      ]);
 
       const snapshot: RoomSnapshot = {
         roomId: room.roomId,
@@ -47,7 +50,7 @@ export function registerPresence(io: RaveServer, socket: RaveSocket) {
           serverTs: room.playback.lastUpdateTs
         },
         videoProvider: room.videoProvider,
-        videoUrl: room.videoUrl,
+        videoUrl: signedVideoUrl,
         recentMessages
       };
       ack(snapshot);
