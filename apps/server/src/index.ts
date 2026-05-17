@@ -11,6 +11,7 @@ import { registerWebrtc } from "./handlers/webrtc.js";
 import { isLivekitConfigured, mintLivekitToken } from "./livekit.js";
 import { supabaseAdmin } from "./lib/supabaseAdmin.js";
 import { fetchUsername, isMember } from "./rooms.js";
+import { isRedisConfigured, makeRedisAdapter } from "./lib/redis.js";
 import type {
   ClientToServerEvents,
   ServerToClientEvents,
@@ -25,7 +26,12 @@ app.use(cors({ origin: WEB_ORIGIN, credentials: true }));
 app.use(express.json());
 
 app.get("/health", (_req, res) => {
-  res.json({ ok: true, ts: Date.now(), livekit: isLivekitConfigured() });
+  res.json({
+    ok: true,
+    ts: Date.now(),
+    livekit: isLivekitConfigured(),
+    redis: isRedisConfigured()
+  });
 });
 
 app.post("/livekit-token", async (req, res) => {
@@ -72,6 +78,10 @@ const io = new Server<
   cors: { origin: WEB_ORIGIN, credentials: true },
   transports: ["websocket"]
 });
+
+// Conditional Redis adapter: lets multiple server instances broadcast across
+// nodes. Without it, broadcasts only reach sockets connected to this process.
+makeRedisAdapter(io);
 
 io.use(authMiddleware);
 
