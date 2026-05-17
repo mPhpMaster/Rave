@@ -7,9 +7,12 @@ export default function LoginPage({
 }) {
   return (
     <main className="min-h-screen flex items-center justify-center px-4">
-      <div className="w-full max-w-sm bg-neutral-900 border border-neutral-800 rounded-2xl p-8">
-        <h1 className="text-2xl font-bold mb-1">Sign in to Rave</h1>
-        <p className="text-sm text-neutral-400 mb-6">Watch in sync with friends.</p>
+      <div className="w-full max-w-sm glass rounded-2xl p-8 shadow-glow-purple animate-fade-in">
+        <h1 className="text-2xl font-bold mb-1 tracking-tight">
+          Sign in to{" "}
+          <span className="bg-brand-gradient bg-clip-text text-transparent">Rave</span>
+        </h1>
+        <p className="text-sm text-ink-secondary mb-6">Watch in sync with friends.</p>
         <LoginForm next={searchParams.next} initialError={searchParams.error} />
       </div>
     </main>

@@ -24,36 +24,35 @@ export default async function Dashboard() {
     <div className="min-h-screen">
       <TopBar username={profile?.username ?? null} />
       <main className="max-w-5xl mx-auto px-6 py-10">
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-3xl font-bold">Your rooms</h1>
-          <Link
-            href="/dashboard/create"
-            className="px-4 py-2 rounded-lg bg-brand hover:bg-brand-dark font-semibold"
-          >
+        <div className="flex items-center justify-between mb-8">
+          <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">
+            Your rooms
+          </h1>
+          <Link href="/dashboard/create" className="btn-primary text-sm">
             New room
           </Link>
         </div>
 
         {rooms && rooms.length > 0 ? (
-          <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 animate-fade-in">
             {rooms.map((r) => (
               <li key={r.id}>
                 <Link
                   href={`/room/${r.id}`}
-                  className="block bg-neutral-900 border border-neutral-800 rounded-2xl p-5 hover:border-brand transition"
+                  className="block glass rounded-2xl p-5 transition duration-300 hover:-translate-y-0.5 hover:shadow-glow-purple"
                 >
                   <div className="flex items-center justify-between mb-2">
-                    <div className="font-semibold">{r.name}</div>
+                    <div className="font-semibold text-white">{r.name}</div>
                     {r.host_id === user!.id && (
-                      <span className="text-xs px-2 py-0.5 rounded bg-brand/20 text-brand">
+                      <span className="text-xs px-2 py-0.5 rounded-pill bg-purple/20 text-purple">
                         host
                       </span>
                     )}
                   </div>
-                  <div className="text-xs uppercase tracking-wide text-neutral-500">
+                  <div className="text-xs uppercase tracking-wide text-ink-muted">
                     {r.video_provider}
                   </div>
-                  <div className="text-xs text-neutral-500 mt-3">
+                  <div className="text-xs text-ink-muted mt-3">
                     Created {new Date(r.created_at).toLocaleString()}
                   </div>
                 </Link>
@@ -61,7 +60,7 @@ export default async function Dashboard() {
             ))}
           </ul>
         ) : (
-          <div className="rounded-2xl border border-dashed border-neutral-800 p-10 text-center text-neutral-400">
+          <div className="rounded-2xl border border-dashed border-white/10 p-10 text-center text-ink-secondary">
             No rooms yet. Create one to start a watch party.
           </div>
         )}

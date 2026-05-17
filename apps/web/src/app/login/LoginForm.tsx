@@ -60,23 +60,23 @@ export default function LoginForm({
         <button
           onClick={() => handleOAuth("google")}
           disabled={loading}
-          className="w-full py-2 rounded-lg bg-white text-neutral-900 font-medium hover:bg-neutral-200 transition disabled:opacity-50"
+          className="w-full py-2.5 rounded-pill bg-white text-neutral-900 font-medium hover:bg-neutral-200 transition disabled:opacity-50"
         >
           Continue with Google
         </button>
         <button
           onClick={() => handleOAuth("discord")}
           disabled={loading}
-          className="w-full py-2 rounded-lg bg-[#5865F2] text-white font-medium hover:opacity-90 transition disabled:opacity-50"
+          className="w-full py-2.5 rounded-pill bg-[#5865F2] text-white font-medium hover:opacity-90 transition disabled:opacity-50"
         >
           Continue with Discord
         </button>
       </div>
 
-      <div className="flex items-center gap-3 text-xs text-neutral-500">
-        <div className="flex-1 h-px bg-neutral-800" />
+      <div className="flex items-center gap-3 text-xs text-ink-muted">
+        <div className="flex-1 h-px bg-white/10" />
         or
-        <div className="flex-1 h-px bg-neutral-800" />
+        <div className="flex-1 h-px bg-white/10" />
       </div>
 
       <form onSubmit={handleEmail} className="space-y-3">
@@ -86,7 +86,7 @@ export default function LoginForm({
           placeholder="you@example.com"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="w-full px-3 py-2 rounded-lg bg-neutral-800 border border-neutral-700 focus:border-brand outline-none"
+          className="w-full px-4 py-2.5 rounded-pill bg-white/5 border border-white/10 focus:border-purple outline-none transition"
         />
         <input
           type="password"
@@ -95,13 +95,13 @@ export default function LoginForm({
           placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="w-full px-3 py-2 rounded-lg bg-neutral-800 border border-neutral-700 focus:border-brand outline-none"
+          className="w-full px-4 py-2.5 rounded-pill bg-white/5 border border-white/10 focus:border-purple outline-none transition"
         />
         {error && <p className="text-sm text-red-400">{error}</p>}
         <button
           type="submit"
           disabled={loading}
-          className="w-full py-2 rounded-lg bg-brand hover:bg-brand-dark font-semibold disabled:opacity-50"
+          className="btn-primary w-full"
         >
           {mode === "signin" ? "Sign in" : "Create account"}
         </button>
@@ -109,7 +109,7 @@ export default function LoginForm({
 
       <button
         onClick={() => setMode((m) => (m === "signin" ? "signup" : "signin"))}
-        className="text-sm text-neutral-400 hover:text-neutral-200"
+        className="text-sm text-ink-secondary hover:text-white transition"
       >
         {mode === "signin" ? "Need an account? Sign up" : "Have an account? Sign in"}
       </button>

@@ -21,10 +21,7 @@ export default function InviteButton({ inviteCode }: { inviteCode: string }) {
   }
 
   return (
-    <button
-      onClick={copy}
-      className="px-3 py-1.5 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-sm"
-    >
+    <button onClick={copy} className="btn-ghost text-sm">
       {copied ? "Link copied" : "Copy invite link"}
     </button>
   );

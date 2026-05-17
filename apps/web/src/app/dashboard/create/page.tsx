@@ -16,10 +16,16 @@ export default async function CreateRoom() {
   return (
     <div className="min-h-screen">
       <TopBar username={profile?.username ?? null} />
-      <main className="max-w-xl mx-auto px-6 py-10">
-        <h1 className="text-3xl font-bold mb-1">New room</h1>
-        <p className="text-neutral-400 mb-8">Pick a YouTube video to watch together.</p>
-        <CreateRoomForm />
+      <main className="max-w-xl mx-auto px-6 py-10 animate-fade-in">
+        <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-1">
+          New room
+        </h1>
+        <p className="text-ink-secondary mb-8">
+          Pick a YouTube video to watch together.
+        </p>
+        <div className="glass rounded-2xl p-6">
+          <CreateRoomForm />
+        </div>
       </main>
     </div>
   );

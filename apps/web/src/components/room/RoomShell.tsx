@@ -238,11 +238,11 @@ export default function RoomShell({
   }
 
   return (
-    <main className="flex-1 max-w-7xl mx-auto w-full px-6 py-6 grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-6 lg:h-[calc(100vh-73px)] min-h-0">
+    <main className="flex-1 max-w-7xl mx-auto w-full px-6 py-6 grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-6 lg:h-[calc(100vh-100px)] min-h-0">
       <section className="min-h-0">
         <div className="flex items-center gap-3 mb-4 flex-wrap">
-          <h1 className="text-2xl font-bold">{room.name}</h1>
-          <span className={`text-xs px-2 py-0.5 rounded ${connected ? "bg-emerald-500/15 text-emerald-300" : "bg-yellow-500/15 text-yellow-300"}`}>
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">{room.name}</h1>
+          <span className={`text-xs px-2.5 py-0.5 rounded-pill ${connected ? "bg-success/15 text-success" : "bg-yellow-500/15 text-yellow-300"}`}>
             {connected ? "live" : "connecting…"}
           </span>
           <div className="ml-auto">
@@ -251,67 +251,69 @@ export default function RoomShell({
         </div>
 
         {joinError && (
-          <div className="mb-4 rounded-lg bg-red-500/10 border border-red-500/40 text-red-300 px-4 py-3 text-sm">
+          <div className="mb-4 rounded-2xl bg-red-500/10 border border-red-500/40 text-red-300 px-4 py-3 text-sm">
             Failed to join room: {joinError}
           </div>
         )}
 
-        {showHostShareView ? (
-          <ScreenShareView
-            stream={shareHost.stream!}
-            mutedDefault
-            label={`Sharing screen · ${shareHost.viewerCount} viewer${shareHost.viewerCount === 1 ? "" : "s"}`}
-          />
-        ) : showViewerShareView ? (
-          <ScreenShareView
-            stream={shareViewer.remoteStream!}
-            mutedDefault={false}
-            label="Host is sharing their screen"
-          />
-        ) : resolvedVideoUrl ? (
-          <RoomPlayer
-            ref={playerRef}
-            videoProvider={room.videoProvider}
-            videoUrl={resolvedVideoUrl}
-            isHost={isHost}
-            startMuted={!isHost}
-            onReady={() => setPlayerReady(true)}
-            onUserPlay={hostHandlers.onUserPlay}
-            onUserPause={hostHandlers.onUserPause}
-          />
-        ) : (
-          <div className="w-full aspect-video bg-black rounded-xl grid place-items-center text-neutral-500 text-sm">
-            Loading video…
-          </div>
-        )}
+        <div className="rounded-2xl overflow-hidden shadow-elev bg-black">
+          {showHostShareView ? (
+            <ScreenShareView
+              stream={shareHost.stream!}
+              mutedDefault
+              label={`Sharing screen · ${shareHost.viewerCount} viewer${shareHost.viewerCount === 1 ? "" : "s"}`}
+            />
+          ) : showViewerShareView ? (
+            <ScreenShareView
+              stream={shareViewer.remoteStream!}
+              mutedDefault={false}
+              label="Host is sharing their screen"
+            />
+          ) : resolvedVideoUrl ? (
+            <RoomPlayer
+              ref={playerRef}
+              videoProvider={room.videoProvider}
+              videoUrl={resolvedVideoUrl}
+              isHost={isHost}
+              startMuted={!isHost}
+              onReady={() => setPlayerReady(true)}
+              onUserPlay={hostHandlers.onUserPlay}
+              onUserPause={hostHandlers.onUserPause}
+            />
+          ) : (
+            <div className="w-full aspect-video grid place-items-center text-ink-muted text-sm">
+              Loading video…
+            </div>
+          )}
+        </div>
 
         {isHost && (
-          <div className="mt-3 flex items-center gap-2 text-sm flex-wrap">
+          <div className="mt-4 flex items-center gap-2 text-sm flex-wrap">
             <button
               onClick={() => handleSeekClick("back")}
               disabled={shareHost.sharing}
-              className="px-3 py-1.5 rounded-lg bg-neutral-800 hover:bg-neutral-700 disabled:opacity-50"
+              className="btn-ghost text-sm"
             >
               − 10s
             </button>
             <button
               onClick={() => handleSeekClick("forward")}
               disabled={shareHost.sharing}
-              className="px-3 py-1.5 rounded-lg bg-neutral-800 hover:bg-neutral-700 disabled:opacity-50"
+              className="btn-ghost text-sm"
             >
               + 10s
             </button>
             {shareHost.sharing ? (
               <button
                 onClick={shareHost.stop}
-                className="px-3 py-1.5 rounded-lg bg-red-500/80 hover:bg-red-500 font-medium"
+                className="inline-flex items-center justify-center font-medium text-white px-4 py-2 rounded-pill bg-red-500/80 hover:bg-red-500 transition"
               >
                 Stop sharing
               </button>
             ) : (
               <button
                 onClick={() => void shareHost.start()}
-                className="px-3 py-1.5 rounded-lg bg-neutral-800 hover:bg-neutral-700"
+                className="btn-ghost text-sm"
               >
                 Share screen
               </button>
@@ -319,7 +321,7 @@ export default function RoomShell({
             {shareHost.error && (
               <span className="text-xs text-red-400">{shareHost.error}</span>
             )}
-            <span className="ml-auto text-xs text-neutral-500">
+            <span className="ml-auto text-xs text-ink-muted">
               {shareHost.sharing
                 ? "Screen sharing — guests see your screen until you stop."
                 : "You are the host. Play / pause / seek to control the room."}
@@ -327,7 +329,7 @@ export default function RoomShell({
           </div>
         )}
         {!isHost && joined && (
-          <div className="mt-3 text-xs text-neutral-500">
+          <div className="mt-3 text-xs text-ink-muted">
             Playback is controlled by the host. Your player stays in sync automatically.
           </div>
         )}

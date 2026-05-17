@@ -10,7 +10,7 @@ import { cn } from "@/lib/cn";
 const Picker = dynamic(() => import("./EmojiPickerWrapper"), {
   ssr: false,
   loading: () => (
-    <div className="text-xs text-neutral-500 px-3 py-2">Loading…</div>
+    <div className="text-xs text-ink-muted px-3 py-2">Loading…</div>
   )
 });
 
@@ -38,7 +38,6 @@ export default function ChatPanel({
   const scrollRef = useRef<HTMLDivElement>(null);
   const lastTypingEmit = useRef<{ at: number; was: boolean }>({ at: 0, was: false });
 
-  // Autoscroll to bottom when messages or typing change.
   useEffect(() => {
     const el = scrollRef.current;
     if (!el) return;
@@ -72,14 +71,14 @@ export default function ChatPanel({
   }
 
   return (
-    <div className="flex flex-col h-full rounded-2xl border border-neutral-800 bg-neutral-900 overflow-hidden">
-      <div className="px-4 py-3 border-b border-neutral-800 text-sm font-semibold">
+    <div className="flex flex-col h-full rounded-2xl glass-strong overflow-hidden">
+      <div className="px-4 py-3 border-b border-white/10 text-sm font-semibold">
         Chat
       </div>
 
-      <div ref={scrollRef} className="flex-1 overflow-y-auto px-3 py-3 space-y-2 min-h-0">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto px-3 py-3 space-y-1 min-h-0">
         {messages.length === 0 && (
-          <div className="text-xs text-neutral-500 text-center py-4">
+          <div className="text-xs text-ink-muted text-center py-4">
             No messages yet. Say hi.
           </div>
         )}
@@ -90,14 +89,14 @@ export default function ChatPanel({
           return (
             <div key={m.id} className={cn("flex flex-col", grouped ? "" : "mt-2")}>
               {!grouped && (
-                <div className="flex items-baseline gap-2 text-xs">
-                  <span className={cn("font-semibold", mine ? "text-brand" : "text-neutral-200")}>
+                <div className="flex items-baseline gap-2 text-xs px-1">
+                  <span className={cn("font-semibold", mine ? "text-purple" : "text-white")}>
                     {m.username}
                   </span>
-                  <span className="text-neutral-600">{formatTime(m.createdAt)}</span>
+                  <span className="text-ink-muted">{formatTime(m.createdAt)}</span>
                 </div>
               )}
-              <div className="text-sm text-neutral-100 whitespace-pre-wrap break-words">
+              <div className="text-sm text-white whitespace-pre-wrap break-words px-3.5 py-2 rounded-[14px] bg-white/5 self-start max-w-full mt-0.5">
                 {m.body}
               </div>
             </div>
@@ -112,19 +111,19 @@ export default function ChatPanel({
       />
 
       {showPicker && (
-        <div className="border-t border-neutral-800">
+        <div className="border-t border-white/10">
           <Picker onSelect={insertEmoji} />
         </div>
       )}
 
       <form
         onSubmit={submit}
-        className="border-t border-neutral-800 p-2 flex items-center gap-2"
+        className="border-t border-white/10 p-2.5 flex items-center gap-2"
       >
         <button
           type="button"
           onClick={() => setShowPicker((s) => !s)}
-          className="w-9 h-9 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-lg leading-none"
+          className="w-9 h-9 rounded-pill bg-white/5 hover:bg-white/10 text-lg leading-none transition"
           aria-label="Insert emoji"
         >
           😀
@@ -136,12 +135,12 @@ export default function ChatPanel({
           maxLength={2000}
           placeholder={connected ? "Message" : "Connecting…"}
           disabled={!connected}
-          className="flex-1 px-3 py-2 rounded-lg bg-neutral-800 border border-neutral-700 focus:border-brand outline-none text-sm disabled:opacity-50"
+          className="flex-1 px-4 py-2 rounded-pill bg-white/5 border border-white/10 focus:border-purple outline-none text-sm disabled:opacity-50 transition"
         />
         <button
           type="submit"
           disabled={!connected || !draft.trim()}
-          className="px-3 py-2 rounded-lg bg-brand hover:bg-brand-dark font-semibold text-sm disabled:opacity-50"
+          className="btn-primary text-sm px-5 py-2"
         >
           Send
         </button>
