@@ -12,7 +12,7 @@ export default async function RoomPage({ params }: { params: { id: string } }) {
 
   const { data: room } = await supabase
     .from("rooms")
-    .select("id, name, host_id, is_public, video_provider, video_url")
+    .select("id, name, host_id, is_public, video_provider, video_url, invite_code")
     .eq("id", params.id)
     .maybeSingle();
 
@@ -61,7 +61,8 @@ export default async function RoomPage({ params }: { params: { id: string } }) {
           name: room.name,
           hostId: room.host_id,
           videoProvider: room.video_provider as "youtube" | "mp4" | "vimeo",
-          videoUrl: room.video_url
+          videoUrl: room.video_url,
+          inviteCode: room.invite_code
         }}
         currentUserId={user.id}
         accessToken={session?.access_token ?? null}

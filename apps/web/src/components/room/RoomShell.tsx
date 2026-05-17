@@ -6,6 +6,7 @@ import RoomPlayer from "@/components/player/RoomPlayer";
 import type { PlayerHandle } from "@/components/player/YouTubePlayer";
 import MemberList from "./MemberList";
 import ChatPanel from "./ChatPanel";
+import InviteButton from "./InviteButton";
 import type {
   ChatMessage,
   RoomMember,
@@ -20,6 +21,7 @@ interface RoomProp {
   hostId: string;
   videoProvider: VideoProvider;
   videoUrl: string;
+  inviteCode: string;
 }
 
 interface Props {
@@ -212,11 +214,14 @@ export default function RoomShell({ room, currentUserId, accessToken, socketUrl 
   return (
     <main className="flex-1 max-w-7xl mx-auto w-full px-6 py-6 grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-6 lg:h-[calc(100vh-73px)] min-h-0">
       <section className="min-h-0">
-        <div className="flex items-center gap-3 mb-4">
+        <div className="flex items-center gap-3 mb-4 flex-wrap">
           <h1 className="text-2xl font-bold">{room.name}</h1>
           <span className={`text-xs px-2 py-0.5 rounded ${connected ? "bg-emerald-500/15 text-emerald-300" : "bg-yellow-500/15 text-yellow-300"}`}>
             {connected ? "live" : "connecting…"}
           </span>
+          <div className="ml-auto">
+            <InviteButton inviteCode={room.inviteCode} />
+          </div>
         </div>
 
         {joinError && (
