@@ -1,0 +1,20 @@
+{
+  "name": "rave",
+  "private": true,
+  "version": "0.0.0",
+  "scripts": {
+    "dev": "npm-run-all -p dev:web dev:server",
+    "dev:web": "pnpm --filter @rave/web dev",
+    "dev:server": "pnpm --filter @rave/server dev",
+    "build": "npm-run-all -s build:web build:server",
+    "build:web": "pnpm --filter @rave/web build",
+    "build:server": "pnpm --filter @rave/server build"
+  },
+  "devDependencies": {
+    "npm-run-all": "^4.1.5"
+  },
+  "engines": {
+    "node": ">=18.18"
+  },
+  "packageManager": "pnpm@9.15.0"
+}
