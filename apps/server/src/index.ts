@@ -98,6 +98,18 @@ io.on("connection", (socket) => {
   });
 });
 
+const nextStaticPath = path.resolve("../web/.next/standalone/apps/web/.next");
+app.use("/_next", express.static(nextStaticPath));
+
+// @ts-ignore
+import("../../../web/.next/standalone/apps/web/server.js").then(({ default: nextHandler }) => {
+  app.all("*", (req, res) => {
+    nextHandler(req, res);
+  });
+}).catch(err => {
+  console.error("Failed to load Next.js standalone server module:", err);
+});
+
 httpServer.listen(PORT, () => {
   console.log(`[server] listening on http://localhost:${PORT}`);
   console.log(`[server] CORS origin: ${WEB_ORIGIN}`);
