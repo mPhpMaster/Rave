@@ -16,7 +16,7 @@ export function useSocket(url: string, accessToken: string | null) {
   useEffect(() => {
     if (!accessToken) return;
     const s: RaveSocket = io(url, {
-      transports: ["websocket"],
+      transports: ["polling"],
       auth: { token: accessToken },
       reconnection: true,
       reconnectionAttempts: Infinity
