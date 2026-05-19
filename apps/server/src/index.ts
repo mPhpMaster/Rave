@@ -76,7 +76,7 @@ const io = new Server<
   SocketData
 >(httpServer, {
   cors: { origin: WEB_ORIGIN, credentials: true },
-  transports: ["websocket"]
+  transports: ["polling", "websocket"]
 });
 
 // Conditional Redis adapter: lets multiple server instances broadcast across
