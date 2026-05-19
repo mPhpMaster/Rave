@@ -18,7 +18,7 @@ import type {
   SocketData
 } from "./types/events.js";
 
-const PORT = Number(process.env.PORT ?? 3001);
+const PORT = Number(process.env.SERVER_PORT ?? 3001);
 const WEB_ORIGIN = process.env.WEB_ORIGIN ?? "http://localhost:3000";
 
 const app = express();
