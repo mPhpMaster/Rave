@@ -18,7 +18,7 @@ import type {
   SocketData
 } from "./types/events.js";
 
-const PORT = Number(process.env.PORT ?? 3001);
+const PORT = Number(process.env.SERVER_PORT ?? 3001);
 const WEB_ORIGIN = process.env.WEB_ORIGIN ?? "http://localhost:3000";
 
 const app = express();
@@ -76,7 +76,7 @@ const io = new Server<
   SocketData
 >(httpServer, {
   cors: { origin: WEB_ORIGIN, credentials: true },
-  transports: ["websocket"]
+  transports: ["polling", "websocket"]
 });
 
 // Conditional Redis adapter: lets multiple server instances broadcast across
@@ -96,6 +96,18 @@ io.on("connection", (socket) => {
   socket.on("disconnect", (reason) => {
     console.log(`[ws] disconnected sid=${socket.id} reason=${reason}`);
   });
+});
+
+const nextStaticPath = path.resolve("../web/.next/standalone/apps/web/.next");
+app.use("/_next", express.static(nextStaticPath));
+
+// @ts-ignore
+import("../../../web/.next/standalone/apps/web/server.js").then(({ default: nextHandler }) => {
+  app.all("*", (req, res) => {
+    nextHandler(req, res);
+  });
+}).catch(err => {
+  console.error("Failed to load Next.js standalone server module:", err);
 });
 
 httpServer.listen(PORT, () => {
