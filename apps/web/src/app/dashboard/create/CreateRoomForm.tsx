@@ -3,23 +3,31 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { parseYouTubeId } from "@/lib/youtube";
+import { SOURCES, getSource } from "@/lib/sources";
+import type { VideoProvider } from "@/types/events";
 
 const MAX_MP4_MB = 100;
-
-type Provider = "youtube" | "mp4";
 
 export default function CreateRoomForm() {
   const router = useRouter();
   const supabase = createClient();
-  const [provider, setProvider] = useState<Provider>("youtube");
+  const [provider, setProvider] = useState<VideoProvider>("youtube");
   const [name, setName] = useState("");
-  const [youtubeUrl, setYoutubeUrl] = useState("");
+  const [url, setUrl] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [uploadPct, setUploadPct] = useState<number | null>(null);
   const [isPublic, setIsPublic] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+
+  const source = getSource(provider)!;
+
+  function selectProvider(next: VideoProvider) {
+    setProvider(next);
+    setError(null);
+    setUrl("");
+    setFile(null);
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -34,14 +42,10 @@ export default function CreateRoomForm() {
     }
 
     let video_url: string;
-    if (provider === "youtube") {
-      const id = parseYouTubeId(youtubeUrl);
-      if (!id) {
-        setError("That doesn't look like a YouTube URL or video ID.");
-        return;
-      }
-      video_url = id;
-    } else {
+    if (source.input === "none") {
+      // Homepage-embed sources: store the site homepage; the room frames it.
+      video_url = source.homepage!;
+    } else if (source.input === "file") {
       if (!file) {
         setError("Pick an MP4 file to upload.");
         return;
@@ -71,6 +75,13 @@ export default function CreateRoomForm() {
         return;
       }
       video_url = path;
+    } else {
+      const parsed = source.parse ? source.parse(url) : url.trim();
+      if (!parsed) {
+        setError(`That doesn't look like a valid ${source.label} link.`);
+        return;
+      }
+      video_url = parsed;
     }
 
     setSubmitting(true);
@@ -110,35 +121,46 @@ export default function CreateRoomForm() {
       </Field>
 
       <Field label="Source">
-        <div className="flex gap-2 text-sm">
-          <ProviderButton
-            active={provider === "youtube"}
-            onClick={() => setProvider("youtube")}
-          >
-            YouTube
-          </ProviderButton>
-          <ProviderButton
-            active={provider === "mp4"}
-            onClick={() => setProvider("mp4")}
-          >
-            MP4 upload
-          </ProviderButton>
+        <div className="flex flex-wrap gap-2 text-sm">
+          {SOURCES.map((s) => (
+            <ProviderButton
+              key={s.id}
+              active={provider === s.id}
+              onClick={() => selectProvider(s.id)}
+            >
+              {s.label}
+            </ProviderButton>
+          ))}
         </div>
       </Field>
 
-      {provider === "youtube" && (
-        <Field label="YouTube URL or video ID">
-          <input
-            required
-            value={youtubeUrl}
-            onChange={(e) => setYoutubeUrl(e.target.value)}
-            placeholder="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
-            className="w-full px-4 py-2.5 rounded-pill bg-white/5 border border-white/10 focus:border-purple outline-none transition"
-          />
+      {source.input === "none" && (
+        <Field label={`${source.label} page`}>
+          <div className="px-4 py-2.5 rounded-pill bg-white/5 border border-white/10 text-sm text-ink-secondary break-all">
+            {source.homepage}
+          </div>
+          {source.help && (
+            <div className="mt-1.5 text-xs text-ink-muted">{source.help}</div>
+          )}
         </Field>
       )}
 
-      {provider === "mp4" && (
+      {source.input === "url" && (
+        <Field label={`${source.label} link`}>
+          <input
+            required
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            placeholder={source.placeholder}
+            className="w-full px-4 py-2.5 rounded-pill bg-white/5 border border-white/10 focus:border-purple outline-none transition"
+          />
+          {source.help && (
+            <div className="mt-1.5 text-xs text-ink-muted">{source.help}</div>
+          )}
+        </Field>
+      )}
+
+      {source.input === "file" && (
         <Field label={`MP4 file (max ${MAX_MP4_MB} MB)`}>
           <input
             required

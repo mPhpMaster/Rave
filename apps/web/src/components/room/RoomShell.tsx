@@ -6,10 +6,12 @@ import { useScreenShareHost } from "@/hooks/useScreenShareHost";
 import { useScreenShareViewer } from "@/hooks/useScreenShareViewer";
 import RoomPlayer from "@/components/player/RoomPlayer";
 import type { PlayerHandle } from "@/components/player/PlayerHandle";
+import { getSource } from "@/lib/sources";
 import MemberList from "./MemberList";
 import ChatPanel from "./ChatPanel";
 import InviteButton from "./InviteButton";
 import ScreenShareView from "./ScreenShareView";
+import HomepageShareGate from "./HomepageShareGate";
 import VoicePanel from "./VoicePanel";
 import type {
   ChatMessage,
@@ -48,6 +50,11 @@ export default function RoomShell({
   liveKitUrl
 }: Props) {
   const isHost = room.hostId === currentUserId;
+  // Homepage sources (Twitch, Netflix, X, …) can't be framed; they're watched
+  // via the host's screen share instead of an in-app player.
+  const source = getSource(room.videoProvider);
+  const isHomepageSource = source?.input === "none";
+  const sourceLabel = source?.label ?? room.videoProvider;
   const { socket, connected } = useSocket(socketUrl, accessToken);
   const playerRef = useRef<PlayerHandle>(null);
 
@@ -56,9 +63,10 @@ export default function RoomShell({
   const [joined, setJoined] = useState(false);
   const [playerReady, setPlayerReady] = useState(false);
   const [resolvedVideoUrl, setResolvedVideoUrl] = useState<string | null>(
-    // YouTube: the SSR-passed ID is usable immediately. MP4 needs the signed
-    // URL from the room:snapshot — render nothing until it arrives.
-    room.videoProvider === "youtube" ? room.videoUrl : null
+    // The SSR-passed value (YouTube id, Vimeo id, embed token, reference URL) is
+    // usable immediately. Only MP4 needs the signed URL from the room:snapshot —
+    // render nothing for it until that arrives.
+    room.videoProvider === "mp4" ? null : room.videoUrl
   );
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [typingUserIds, setTypingUserIds] = useState<string[]>([]);
@@ -269,6 +277,14 @@ export default function RoomShell({
               mutedDefault={false}
               label="Host is sharing their screen"
             />
+          ) : isHomepageSource ? (
+            <HomepageShareGate
+              label={sourceLabel}
+              homepage={resolvedVideoUrl ?? room.videoUrl}
+              isHost={isHost}
+              onShare={() => void shareHost.start()}
+              error={shareHost.error}
+            />
           ) : resolvedVideoUrl ? (
             <RoomPlayer
               ref={playerRef}
@@ -289,20 +305,24 @@ export default function RoomShell({
 
         {isHost && (
           <div className="mt-4 flex items-center gap-2 text-sm flex-wrap">
-            <button
-              onClick={() => handleSeekClick("back")}
-              disabled={shareHost.sharing}
-              className="btn-ghost text-sm"
-            >
-              − 10s
-            </button>
-            <button
-              onClick={() => handleSeekClick("forward")}
-              disabled={shareHost.sharing}
-              className="btn-ghost text-sm"
-            >
-              + 10s
-            </button>
+            {!isHomepageSource && (
+              <>
+                <button
+                  onClick={() => handleSeekClick("back")}
+                  disabled={shareHost.sharing}
+                  className="btn-ghost text-sm"
+                >
+                  − 10s
+                </button>
+                <button
+                  onClick={() => handleSeekClick("forward")}
+                  disabled={shareHost.sharing}
+                  className="btn-ghost text-sm"
+                >
+                  + 10s
+                </button>
+              </>
+            )}
             {shareHost.sharing ? (
               <button
                 onClick={shareHost.stop}
@@ -324,13 +344,17 @@ export default function RoomShell({
             <span className="ml-auto text-xs text-ink-muted">
               {shareHost.sharing
                 ? "Screen sharing — guests see your screen until you stop."
-                : "You are the host. Play / pause / seek to control the room."}
+                : isHomepageSource
+                  ? `Share your screen to play ${sourceLabel} for everyone.`
+                  : "You are the host. Play / pause / seek to control the room."}
             </span>
           </div>
         )}
         {!isHost && joined && (
           <div className="mt-3 text-xs text-ink-muted">
-            Playback is controlled by the host. Your player stays in sync automatically.
+            {isHomepageSource
+              ? `The host shares their screen for ${sourceLabel} — it appears above automatically.`
+              : "Playback is controlled by the host. Your player stays in sync automatically."}
           </div>
         )}
       </section>

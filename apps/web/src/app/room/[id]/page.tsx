@@ -2,6 +2,7 @@ import { redirect, notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import TopBar from "@/components/TopBar";
 import RoomShell from "@/components/room/RoomShell";
+import type { VideoProvider } from "@/types/events";
 
 export default async function RoomPage({ params }: { params: { id: string } }) {
   const supabase = createClient();
@@ -61,7 +62,7 @@ export default async function RoomPage({ params }: { params: { id: string } }) {
           id: room.id,
           name: room.name,
           hostId: room.host_id,
-          videoProvider: room.video_provider as "youtube" | "mp4" | "vimeo",
+          videoProvider: room.video_provider as VideoProvider,
           videoUrl: room.video_url,
           inviteCode: room.invite_code
         }}

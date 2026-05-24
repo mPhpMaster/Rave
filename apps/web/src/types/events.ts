@@ -1,6 +1,16 @@
 // Mirror of apps/server/src/types/events.ts — keep in sync.
 
-export type VideoProvider = "youtube" | "mp4" | "vimeo";
+export type VideoProvider =
+  | "youtube"
+  | "mp4"
+  | "vimeo"
+  | "twitch"
+  | "gdrive"
+  | "reddit"
+  | "twitter"
+  | "pluto"
+  | "tubi"
+  | "netflix";
 
 export interface RoomMember {
   userId: string;

@@ -68,7 +68,7 @@ create table if not exists public.rooms (
   name text not null check (char_length(name) between 1 and 80),
   host_id uuid not null references public.profiles(id) on delete cascade,
   is_public boolean not null default false,
-  video_provider text not null check (video_provider in ('youtube', 'mp4', 'vimeo')),
+  video_provider text not null check (video_provider in ('youtube', 'mp4', 'vimeo', 'twitch', 'gdrive', 'reddit', 'twitter', 'pluto', 'tubi', 'netflix')),
   video_url text not null,
   invite_code text unique not null default replace(replace(encode(gen_random_bytes(6), 'base64'), '/', '_'), '+', '-'),
   created_at timestamptz not null default now()

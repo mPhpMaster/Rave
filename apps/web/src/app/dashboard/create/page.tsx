@@ -21,7 +21,8 @@ export default async function CreateRoom() {
           New room
         </h1>
         <p className="text-ink-secondary mb-8">
-          Pick a YouTube video to watch together.
+          Pick a video source to watch together — YouTube, Twitch,
+          Google Drive, an MP4 upload, and more.
         </p>
         <div className="glass rounded-2xl p-6">
           <CreateRoomForm />
