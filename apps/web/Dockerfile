@@ -10,6 +10,8 @@ COPY apps/web/package.json ./apps/web/package.json
 RUN pnpm install --filter @rave/web --frozen-lockfile
 
 COPY apps/web ./apps/web
+# Next.js projects may omit public/ locally; runtime stage still copies it.
+RUN mkdir -p ./apps/web/public
 
 # NEXT_PUBLIC_* vars must be present at build time — Next inlines them into
 # the client bundle. Pass via --build-arg in docker build / docker compose.
